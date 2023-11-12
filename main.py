@@ -33,25 +33,21 @@ class Tile(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, (0, 0, 0), self.image.get_rect(), 1)
 
 def get_path(start_pos, end_pos):
-    path_lst = []
+    next_path = start_pos
 
     distance_x = end_pos[0] - start_pos[0]
     distance_y = end_pos[1] - start_pos[1]
 
-    for tile in range(0, abs(distance_x)):
-        if(distance_x>0):
-            path_lst.append((start_pos[0] + tile + 1, start_pos[1]))
-        else:
-            path_lst.append((start_pos[0] - tile - 1, start_pos[1]))
-
-    if (distance_y > 0):
-        for tile in range(0, abs(distance_y)):
-            path_lst.append((start_pos[0] + distance_x, start_pos[1] + tile))
-
-    if (distance_y < 0):
-        for tile in range(0, abs(distance_y)):
-            path_lst.append((start_pos[0] + distance_x, start_pos[1] - tile))
-    return path_lst
+    if(distance_x>0):
+        next_path = (start_pos[0] + 1, start_pos[1])
+    elif(distance_x<0):
+        next_path = (start_pos[0] - 1, start_pos[1])
+    else:
+        if (distance_y > 0):
+            next_path = (start_pos[0] + distance_x, start_pos[1] + 1)
+        if (distance_y < 0):
+            next_path = (start_pos[0] + distance_x, start_pos[1] - 1)
+    return next_path
 
 tile_lst = []
 tile_group = pygame.sprite.Group()
@@ -63,7 +59,8 @@ for x in range(0, 15):
         tile_group.add(tile)
     tile_lst.append(lst)
 
-path=[]
+path_lst=[]
+pre_path_lst = []
 start_tile = None
 end_tile = None
 first_dir = None
@@ -84,18 +81,25 @@ while (run):
                 tile_lst[pygame.mouse.get_pos()[0] // 20][pygame.mouse.get_pos()[1] // 20].color = (100, 100, 255)
                 end_tile = tile_lst[pygame.mouse.get_pos()[0] // 20][pygame.mouse.get_pos()[1] // 20]
             if start_tile is not None and end_tile is not None:
-                for tile in path:
+                for tile in path_lst:
+                    print('test')
                     tile_lst[tile[0]][tile[1]].color = (100,100,100)
+                    print(tile_lst[tile[0]][tile[1]].color)
+                path_lst = []
+
+                next_start = start_tile.pos
                 print(start_tile.pos)
                 print(end_tile.pos)
+                print(path_lst)
+                print(len(path_lst))
                 print()
                 #get_path(first_dir, second_dir, start_tile.pos, end_tile.pos)
-                path = get_path(start_tile.pos, end_tile.pos)
-                print(path)
-                print(len(path))
-                for tile in path:
-                    tile_lst[tile[0]][tile[1]].color = (0, 0, 0)
-
+                while next_start != end_tile.pos:
+                    path = get_path(next_start, end_tile.pos)
+                    path_lst.append(path)
+                    next_start = path_lst[-1]
+                for tile in path_lst:
+                    tile_lst[tile[0]][tile[1]].color = (150, 150, 150)
 
     tile_group.update()
 
